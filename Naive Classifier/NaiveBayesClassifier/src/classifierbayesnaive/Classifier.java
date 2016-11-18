@@ -6,15 +6,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * @author sandeep,snehal,tanmaya,kushagra
+ * @title : Implementation of Naive_Bayes_Classifier to find whether a given bitmap represents the image of a person or not
+ * @version 1.0
+ */
 public class Classifier {
-	static ArrayList<Integer> trainLabels = new ArrayList<Integer>();
-	static ArrayList<Integer> testLabels = new ArrayList<Integer>();
-	static ArrayList<Integer> predictedLabels = new ArrayList<Integer>();
-	static int [][]trainFaces = new int[451][4200];
-	static int [][]testFaces = new int[150][4200];
-	static HashMap<Integer, double[]> countTable = new HashMap<Integer,double[]>();
-	static double muggle = 0.0;
-	static double wizard = 0.0;
+	static ArrayList<Integer> trainLabels = new ArrayList<Integer>();/** Stores the results of training data's bitmaps*/
+	static ArrayList<Integer> testLabels = new ArrayList<Integer>();/** Stores the results of testing data's bitmaps*/ 
+	static ArrayList<Integer> predictedLabels = new ArrayList<Integer>();/** Stores the predicted results*/
+	static int [][]trainFaces = new int[451][4200];/** Stores the pixel information of each image in the training data as a 4200 size array (70X60) bitmap */
+	static int [][]testFaces = new int[150][4200];/** Stores the pixel information of each image in the testing data as a 4200 size array (70X60) bitmap */
+	static HashMap<Integer, double[]> countTable = new HashMap<Integer,double[]>();/** For each pixel stores the probability of it being '#' and being a human & all other three cases*/
+	static double muggle = 0.0;/** Probability of a bitmap being a human*/
+	static double wizard = 0.0;/** Probability of a bitmap not being a human*/
 	public static void main(String args[]){
 		try{
 			inputLabelHandle("facedatatrainlabels",trainLabels);
@@ -43,6 +48,9 @@ public class Classifier {
 		calculateAccuracy();
 
 	}
+	/**
+	 * Calculates the accuracy of the classifier based on the predictedLabels and the testLabels
+	 */
 	public static void calculateAccuracy(){
 		int positive = 0;
 		int negative = 0;
@@ -57,6 +65,9 @@ public class Classifier {
 		System.out.println("Accuracy of the classifier is : " + accuracy+"%");
   		System.out.println("It has correctly classified "+positive+" instances out of "+(positive+negative)+" instances" );
 	}
+	/**
+	 * Classifies a given bitmap as being a human or not based on the Bayes' Theorem
+	 */
 	public static void naivePrediction(){
 		double human = 1.0;
 		double no_human = 1.0;
@@ -79,6 +90,13 @@ public class Classifier {
 				predictedLabels.add(0);
 		}
 	}
+	/**
+	 * Populates the countTable Hashmap with the probabilities of each pixel.
+	 * arr[0] = pixel being 0 when the image is not that of a human
+	 * arr[1] = pixel being 0 when the image is not that a human
+	 * arr[2] = pixel being 1 when the image is not that of a human
+	 * arr[3] = pixel being 1 when the image is that of a human
+	 */
 	public static void populateHashTable(){
 		for(int i = 0 ;i<4200;i++)
 		{
@@ -117,6 +135,11 @@ public class Classifier {
 		muggle = muggle/(muggle+wizard);
 		wizard = 1 - muggle;
 	}
+	/**
+	 * @param filename : the filename containing labels
+	 * @param labels : the arrayList of Integers to be updated
+	 * @throws IOException
+	 */
 	public static void inputLabelHandle(String filename,ArrayList<Integer> labels)throws IOException {
 		BufferedReader br = new BufferedReader(new FileReader(filename));
 		String line=null;
@@ -125,6 +148,11 @@ public class Classifier {
 		} 
 		br.close();
 	}
+	/**
+	 * @param filename : the filename containing faces (bitmaps)
+	 * @param faces : the array to be updated
+	 * @throws IOException
+	 */
 	public static void inputFaceHandle(String filename,int[][] faces)throws IOException {
 		BufferedReader br = new BufferedReader(new FileReader(filename));
 		String line=null;
