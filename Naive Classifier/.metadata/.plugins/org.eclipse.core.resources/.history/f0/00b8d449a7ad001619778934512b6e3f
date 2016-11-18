@@ -1,0 +1,5 @@
+package classifierbayesnaive;
+
+public class Classifier {
+
+}

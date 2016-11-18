@@ -1,0 +1,27 @@
+package classifierbayesnaive;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+public class Classifier {
+	static int trainLabels[] = new int[451];
+	public static void main(String args[]){
+		try{
+			inputHandle("facedatatrainlabels");
+		}catch(Exception e){
+			System.out.println("train "+e);
+		}
+	}
+	public static void inputHandle(String filename)throws IOException {
+		BufferedReader br = new BufferedReader(new FileReader(filename));
+		String line=null;
+		int i = 0;
+		while( (line=br.readLine()) != null) {
+			i++;
+			trainLabels[i] = Integer.parseInt(line);
+		}       
+
+		br.close();
+	}
+}

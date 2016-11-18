@@ -1,0 +1,56 @@
+package classifierbayesnaive;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+
+public class Classifier {
+	static ArrayList<Integer> trainLabels = new ArrayList<Integer>();
+	static int [][]trainFaces = new int[451][4200];
+	public static void main(String args[]){
+		try{
+			inputLabelHandle("facedatatrainlabels");
+		}catch(Exception e){
+			System.out.println("train "+e);
+		}
+
+		try{
+			inputFaceHandle("facedatatrain");
+		}catch(Exception e){
+			System.out.println("train "+e);
+		}
+	}
+	public static void inputLabelHandle(String filename)throws IOException {
+		BufferedReader br = new BufferedReader(new FileReader(filename));
+		String line=null;
+		while( (line=br.readLine()) != null) {
+			trainLabels.add(Integer.parseInt(line));
+		}       
+		br.close();
+	}
+	public static void inputFaceHandle(String filename)throws IOException {
+		BufferedReader br = new BufferedReader(new FileReader(filename));
+		String line=null;
+		int linesRead = 0;
+		int row=-1;
+		int column = 0;
+		while((line=br.readLine()) != null) {
+			if(linesRead%70==0)
+			{
+				row++;
+				column = 0;
+			}
+			for(int j =0;j<line.length();j++){
+				if(line.charAt(j)=='#')
+					trainFaces[row][column]=1;
+				else
+					trainFaces[row][column]=0;
+				column++;
+			}
+			linesRead++;
+		}
+		br.close();
+	}
+}

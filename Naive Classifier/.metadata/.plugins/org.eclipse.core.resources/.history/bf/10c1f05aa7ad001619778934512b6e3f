@@ -1,0 +1,23 @@
+package classifierbayesnaive;
+
+import java.io.BufferedReader;
+
+public class Classifier {
+
+	
+  	/**
+  	 * @param filename : the filename to be opened
+  	 * @param data : The ArrayList of data objects which is to be populated on the basis of data
+  	 * @throws IOException : To handle File not found error.
+  	 * @see IOException
+  	 */
+  	public static void inputHandle(String filename,ArrayList<DataSet> data)throws IOException {
+  		 BufferedReader br = new BufferedReader(new FileReader(filename));
+         String line=null;
+         int flag = 1;
+         while( (line=br.readLine()) != null) {
+         }       
+         
+         br.close();
+}
+}

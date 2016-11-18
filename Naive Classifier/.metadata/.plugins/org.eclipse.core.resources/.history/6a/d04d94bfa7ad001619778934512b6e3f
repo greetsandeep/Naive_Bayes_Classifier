@@ -1,0 +1,21 @@
+package classifierbayesnaive;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+public class Classifier {
+
+	public static void main(String args[]){
+		
+	}
+	public static void inputHandle(String filename)throws IOException {
+		BufferedReader br = new BufferedReader(new FileReader(filename));
+		String line=null;
+		while( (line=br.readLine()) != null) {
+
+		}       
+
+		br.close();
+	}
+}
