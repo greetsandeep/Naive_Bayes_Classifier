@@ -3,6 +3,7 @@ package classifierbayesnaive;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -21,6 +22,8 @@ public class Classifier {
 	static double muggle = 0.0;/** Probability of a bitmap being a human*/
 	static double wizard = 0.0;/** Probability of a bitmap not being a human*/
 	public static void main(String args[]){
+
+		/* Reading Training Data */
 		try{
 			inputLabelHandle("facedatatrainlabels",trainLabels);
 		}catch(Exception e){
@@ -31,9 +34,11 @@ public class Classifier {
 		}catch(Exception e){
 		}
 
+		/* Processing the training data and applying the classisfier*/	
 		populateHashTable();
 		trainFaces = null;trainLabels=null;
 
+		/* Reading the testing data*/
 		try{
 			inputLabelHandle("facedatatestlabels",testLabels);
 		}catch(Exception e){
@@ -44,9 +49,9 @@ public class Classifier {
 		}catch(Exception e){
 		}
 
+		/* Predicting and Evaluating the results*/
 		naivePrediction();
 		calculateAccuracy();
-
 	}
 	/**
 	 * Calculates the accuracy of the classifier based on the predictedLabels and the testLabels
@@ -62,23 +67,26 @@ public class Classifier {
 				negative++;
 		}
 		double accuracy = ((double)positive / (positive+negative))*100;
+		accuracy = Math.round(accuracy*100) / 100.0;
 		System.out.println("Accuracy of the classifier is : " + accuracy+"%");
-  		System.out.println("It has correctly classified "+positive+" instances out of "+(positive+negative)+" instances" );
+		System.out.println("It has correctly classified "+positive+" instances out of "+(positive+negative)+" instances" );
 	}
 	/**
 	 * Classifies a given bitmap as being a human or not based on the Bayes' Theorem
 	 */
 	public static void naivePrediction(){
-		double human = 1.0;
-		double no_human = 1.0;
 		for(int i=0;i<testFaces.length;i++)
 		{
+			double human = 1.0;
+			double no_human = 1.0;
 			for(int j=0;j<testFaces[i].length;j++)
 			{
+				if(i==14)
+					System.out.println(human);
 				if(testFaces[i][j]==1)
 				{
-					human *= countTable.get(j)[3];
-					no_human *= countTable.get(j)[2];
+					human = human * countTable.get(j)[3];
+					no_human = no_human * countTable.get(j)[2];
 				}else{
 					human *= countTable.get(j)[1];
 					no_human *= countTable.get(j)[0];
@@ -113,7 +121,7 @@ public class Classifier {
 					countTable.get(i)[1]++;
 				else if(trainFaces[j][i]==1 && trainLabels.get(j)==0)
 					countTable.get(i)[2]++;
-				else
+				else 
 					countTable.get(i)[3]++;
 			}
 		}
@@ -122,9 +130,10 @@ public class Classifier {
 			double temp[] = countTable.get(i);
 			countTable.get(i)[0] = temp[0]/(temp[0]+temp[2]);
 			countTable.get(i)[1] = temp[1]/(temp[3]+temp[1]);
-			countTable.get(i)[2] = 1 - countTable.get(i)[0];
+			countTable.get(i)[2] = 1 - countTable.get(i)[0]; 
 			countTable.get(i)[3] = 1 - countTable.get(i)[1];
 		}
+
 		for(int i=0;i<trainLabels.size();i++)
 		{
 			if(trainLabels.get(i)==1)
