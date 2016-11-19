@@ -1,4 +1,4 @@
-<h1>ML Algorithms</h1>
+<h1>Naive Bayes' Classifier</h1>
 <h3>Applying Naive Bayes' Classifier to classify a given bitmap (whether it represents a face or not)</h3>
 <b>Course Number :</b> BITS F464
 
