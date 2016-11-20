@@ -3,7 +3,6 @@ package classifierbayesnaive;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -75,24 +74,29 @@ public class Classifier {
 	 * Classifies a given bitmap as being a human or not based on the Bayes' Theorem
 	 */
 	public static void naivePrediction(){
+		for(int i=0;i<countTable.size();i++)
+		{
+			countTable.get(i)[0] = Math.log(countTable.get(i)[0]);
+			countTable.get(i)[1] = Math.log(countTable.get(i)[1]);
+			countTable.get(i)[2] = Math.log(countTable.get(i)[2]);
+			countTable.get(i)[3] = Math.log(countTable.get(i)[3]);
+		}
 		for(int i=0;i<testFaces.length;i++)
 		{
-			double human = 1.0;
-			double no_human = 1.0;
+			double human = 0.0;
+			double no_human = 0.0;
 			for(int j=0;j<testFaces[i].length;j++)
 			{
-				if(i==14)
-					System.out.println(human);
 				if(testFaces[i][j]==1)
 				{
-					human = human * countTable.get(j)[3];
-					no_human = no_human * countTable.get(j)[2];
+					human += countTable.get(j)[3];
+					no_human += countTable.get(j)[2];
 				}else{
-					human *= countTable.get(j)[1];
-					no_human *= countTable.get(j)[0];
+					human += countTable.get(j)[1];
+					no_human += countTable.get(j)[0];
 				}
 			}
-			if(human*muggle > wizard*no_human)
+			if(human + Math.log(muggle) > Math.log(wizard)+ no_human)
 				predictedLabels.add(1);
 			else
 				predictedLabels.add(0);
