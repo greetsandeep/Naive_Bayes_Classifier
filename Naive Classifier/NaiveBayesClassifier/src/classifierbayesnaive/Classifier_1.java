@@ -11,14 +11,13 @@ import java.util.HashMap;
  * @title : Implementation of Naive_Bayes_Classifier to find whether a given bitmap represents the image of a person or not
  * @version 1.0
  */
-public class Classifier {
+public class Classifier_1 {
 	static ArrayList<Integer> trainLabels = new ArrayList<Integer>();/** Stores the results of training data's bitmaps*/
 	static ArrayList<Integer> testLabels = new ArrayList<Integer>();/** Stores the results of testing data's bitmaps*/ 
 	static ArrayList<Integer> predictedLabels = new ArrayList<Integer>();/** Stores the predicted results*/
 	static int [][]trainFaces = new int[451][4200];/** Stores the pixel information of each image in the training data as a 4200 size array (70X60) bitmap */
 	static int [][]testFaces = new int[150][4200];/** Stores the pixel information of each image in the testing data as a 4200 size array (70X60) bitmap */
-	static int[] positive = new int[4200];
-	static int[] negative = new int[4200];
+	static HashMap<Integer, double[]> countTable = new HashMap<Integer,double[]>();/** For each pixel stores the probability of it being '#' and being a human & all other three cases*/
 	static double muggle = 0.0;/** Probability of a bitmap being a human*/
 	static double wizard = 0.0;/** Probability of a bitmap not being a human*/
 	public static void main(String args[]){
@@ -33,7 +32,11 @@ public class Classifier {
 			inputFaceHandle("facedatatrain",trainFaces);
 		}catch(Exception e){
 		}
-		populateVariables();
+
+		/* Processing the training data and applying the classifier*/	
+		populateHashTable();
+		//trainFaces = null;trainLabels=null;
+
 		/* Reading the testing data*/
 		try{
 			inputLabelHandle("facedatatestlabels",testLabels);
@@ -41,14 +44,17 @@ public class Classifier {
 		}
 
 		try{
-			inputFaceHandle("facedatatrain",testFaces);
+			inputFaceHandle("facedatatest",testFaces);
 		}catch(Exception e){
 		}
-		
-		predictResults();
+
+		/* Predicting and Evaluating the results*/
+		naivePrediction();
 		calculateAccuracy();
 	}
-
+	/**
+	 * Calculates the accuracy of the classifier based on the predictedLabels and the testLabels
+	 */
 	public static void calculateAccuracy(){
 		int positive = 0;
 		int negative = 0;
@@ -64,50 +70,91 @@ public class Classifier {
 		System.out.println("Accuracy of the classifier is : " + accuracy+"%");
 		System.out.println("It has correctly classified "+positive+" instances out of "+(positive+negative)+" instances" );
 	}
-
-	public static void predictResults(){
-
+	/**
+	 * Classifies a given bitmap as being a human or not based on the Bayes' Theorem
+	 */
+	public static void naivePrediction(){
+		for(int i=0;i<countTable.size();i++)
+		{
+			countTable.get(i)[0] = Math.log(countTable.get(i)[0]);
+			countTable.get(i)[1] = Math.log(countTable.get(i)[1]);
+			countTable.get(i)[2] = Math.log(countTable.get(i)[2]);
+			countTable.get(i)[3] = Math.log(countTable.get(i)[3]);
+		}
 		for(int i=0;i<testFaces.length;i++)
 		{
 			double human = 0.0;
 			double no_human = 0.0;
 			for(int j=0;j<testFaces[i].length;j++)
 			{
-				if(testFaces[i][j]==1 && testLabels.get(i)==1)
-					human += Math.log(positive[j]/muggle);
-				else if(testFaces[i][j]==0 && testLabels.get(i)==1)
-					human += Math.log((muggle-positive[j])/muggle);
-				else if(testFaces[i][j]==0 && testLabels.get(i)==0)
-					no_human += Math.log((wizard-negative[j])/wizard);
-				else if(testFaces[i][j]==1 && testLabels.get(i)==0)
-					no_human += Math.log(negative[j]/wizard);
+				if(testFaces[i][j]==1)
+				{
+					human += countTable.get(j)[3];
+					no_human += countTable.get(j)[2];
+				}else{
+					human += countTable.get(j)[1];
+					no_human += countTable.get(j)[0];
+				}
 			}
-			if(human*muggle>no_human*wizard)
+						
+			if(human + Math.log(muggle) > Math.log(wizard)+ no_human)
 				predictedLabels.add(1);
 			else
 				predictedLabels.add(0);
 		}
 	}
-
-	public static void populateVariables(){
-		for(int i=0;i<trainLabels.size();i++)
+	/**
+	 * Populates the countTable Hashmap with the probabilities of each pixel.
+	 * arr[0] = pixel being 0 when the image is not that of a human
+	 * arr[1] = pixel being 0 when the image is that of a human
+	 * arr[2] = pixel being 1 when the image is not that of a human
+	 * arr[3] = pixel being 1 when the image is that of a human
+	 */
+	public static void populateHashTable(){
+		for(int i = 0 ;i<4200;i++)
 		{
-			if(trainLabels.get(i)==1)
+			double temp[] = new double[4];
+			countTable.put(i,temp);
+		}
+		for(int i=0;i<trainFaces[0].length;i++)
+		{
+			for(int j=0;j<trainFaces.length;j++)
 			{
-				muggle++;
-				for(int j = 0;j<4200;j++)
-					positive[j] += trainFaces[i][j];
-			}
-			else
-			{
-				wizard++;
-				for(int j = 0;j<4200;j++)
-					negative[j] += trainFaces[i][j];
-
+				if(trainFaces[j][i]==0 && trainLabels.get(j)==0){
+					countTable.get(i)[0]++;
+					wizard++;
+				}
+				else if(trainFaces[j][i]==0 && trainLabels.get(j)==1){
+					countTable.get(i)[1]++;
+					muggle++;
+				}
+				else if(trainFaces[j][i]==1 && trainLabels.get(j)==0){
+					countTable.get(i)[2]++;
+					wizard++;
+				}
+				else{
+					countTable.get(i)[3]++;
+					muggle++;
+				}
 			}
 		}
+		for(int i=0;i<4200;i++)
+		{
+			double temp[] = countTable.get(i);
+			countTable.get(i)[0] = temp[0]/(temp[0]+temp[2]);
+			countTable.get(i)[1] = temp[1]/(temp[3]+temp[1]);
+			countTable.get(i)[2] = 1 - countTable.get(i)[0]; 
+			countTable.get(i)[3] = 1 - countTable.get(i)[1];
+		}
+		
+		muggle = muggle/(muggle+wizard);
+		wizard = 1 - muggle;
 	}
-
+	/**
+	 * @param filename : the filename containing labels
+	 * @param labels : the arrayList of Integers to be updated
+	 * @throws IOException
+	 */
 	public static void inputLabelHandle(String filename,ArrayList<Integer> labels)throws IOException {
 		BufferedReader br = new BufferedReader(new FileReader(filename));
 		String line=null;
@@ -121,7 +168,7 @@ public class Classifier {
 	 * @param faces : the array to be updated
 	 * @throws IOException
 	 */
-	public static void inputFaceHandle(String filename,int[][] faces)throws IOException {
+	public static void inputFaceHandle(String filename, int[][] faces)throws IOException {
 		BufferedReader br = new BufferedReader(new FileReader(filename));
 		String line=null;
 		int linesRead = 0;
@@ -144,4 +191,6 @@ public class Classifier {
 		}
 		br.close();
 	}
+	
+	
 }
