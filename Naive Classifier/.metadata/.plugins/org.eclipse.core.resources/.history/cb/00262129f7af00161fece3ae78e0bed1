@@ -131,7 +131,7 @@ public class Classifier {
 					no_human += countTable.get(j)[0];
 				}
 			}
-			//System.out.println(human + " " + ((human>no_human)? " > ":" < ") + no_human);
+			System.out.println(human + " " + ((human>no_human)? " > ":" < ") + no_human);
 			if(human + Math.log(muggle) > Math.log(wizard)+ no_human)
 				predictedLabels.add(1);
 			else

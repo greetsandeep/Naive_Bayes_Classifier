@@ -51,6 +51,7 @@ public class Classifier {
 		populateHashTable();
 		trainFaces = null;trainLabels=null;
 		
+		
 		/* Predicting and Evaluating the results*/
 		naivePrediction();
 		calculateAccuracy();
@@ -115,7 +116,6 @@ public class Classifier {
 			countTable.get(i)[2] = Math.log(countTable.get(i)[2]);
 			countTable.get(i)[3] = Math.log(countTable.get(i)[3]);
 		}
-		
 		for(int i=0;i<testFaces.length;i++)
 		{
 			double human = 0.0;
@@ -131,7 +131,7 @@ public class Classifier {
 					no_human += countTable.get(j)[0];
 				}
 			}
-			//System.out.println(human + " " + ((human>no_human)? " > ":" < ") + no_human);
+			System.out.println(muggle + " "+(muggle>wizard)?" > ":" < " + wizard);
 			if(human + Math.log(muggle) > Math.log(wizard)+ no_human)
 				predictedLabels.add(1);
 			else
@@ -195,10 +195,10 @@ public class Classifier {
 			for(int j=0;j<temp.length;j++)
 				temp[j] =countTable.get(i)[j];
 			
-			countTable.get(i)[0] = (temp[0])/(temp[0]+temp[2]);
-			countTable.get(i)[1] = (temp[1])/(temp[3]+temp[1]);
-			countTable.get(i)[2] = (temp[2])/(temp[0]+temp[2]); 
-			countTable.get(i)[3] = (temp[3])/(temp[3]+temp[1]);
+			countTable.get(i)[0] = (temp[0]+1)/(temp[0]+temp[2]+4200);
+			countTable.get(i)[1] = (temp[1]+1)/(temp[3]+temp[1]+4200);
+			countTable.get(i)[2] = (temp[2]+1)/(temp[0]+temp[2]+4200); 
+			countTable.get(i)[3] = (temp[3]+1)/(temp[3]+temp[1]+4200);
 		}
 		
 		muggle = muggle/(muggle+wizard);
