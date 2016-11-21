@@ -185,11 +185,14 @@ public class Classifier {
 		
 		for(int i=0;i<4200;i++)
 		{
-			double temp[] = countTable.get(i);
-			countTable.get(i)[0] = temp[0]/(temp[0]+temp[2]);
-			countTable.get(i)[1] = temp[1]/(temp[3]+temp[1]);
-			countTable.get(i)[2] = 1 - countTable.get(i)[0]; 
-			countTable.get(i)[3] = 1 - countTable.get(i)[1];
+			double temp[] = new double[4];
+			for(int j=0;j<4;j++){
+				temp[j] = countTable.get(i)[j];
+			}
+			countTable.get(i)[0] = (temp[0]+1)/(temp[0]+temp[2]+452);
+			countTable.get(i)[1] = (temp[1]+1)/(temp[3]+temp[1]+452);
+			countTable.get(i)[2] = (temp[2]+1)/(temp[0]+temp[2]+452);
+			countTable.get(i)[3] = (temp[3]+1)/(temp[3]+temp[1]+452);
 		}
 		
 		muggle = muggle/(muggle+wizard);
