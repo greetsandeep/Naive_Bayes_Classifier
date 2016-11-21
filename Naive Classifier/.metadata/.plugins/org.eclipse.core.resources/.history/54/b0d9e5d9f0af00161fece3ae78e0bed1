@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 /**
  * @author sandeep,snehal,tanmaya,kushagra
- * <h4> Implementation of Naive_Bayes_Classifier to find whether a given bitmap represents the image of a person or not </h4>
+ * @title : Implementation of Naive_Bayes_Classifier to find whether a given bitmap represents the image of a person or not
  * @version 1.0
  */
 public class Classifier {
@@ -104,9 +104,9 @@ public class Classifier {
 		System.out.println("It has correctly classified "+positive+" instances out of "+(positive+negative)+" instances" );
 	}
 	/**
-	 * Classifies a given bitmap as being a human or not based on the <b>Naive Bayes' Theorem</b>
+	 * Classifies a given bitmap as being a human or not based on the Naive Bayes' Theorem
 	 * To avoid rounding off errors which occur because of multiplication of probabilities, we have rather
-	 * worked with the logarithms of the probabilities and took their sum.
+	 * worked with the logartihms of the probabilites and took their sum
 	 */
 	public static void naivePrediction(){
 		for(int i=0;i<countTable.size();i++)
@@ -144,8 +144,6 @@ public class Classifier {
 	 * arr[1] = pixel being 0 when the image is that of a human
 	 * arr[2] = pixel being 1 when the image is not that of a human
 	 * arr[3] = pixel being 1 when the image is that of a human
-	 * We have added 1 to the count of every attribute value - class combination when an attribute value doesn't occur with every class value
-	 * (i.e to overcome the <b>zero frequency problem</b>).
 	 */
 	public static void populateHashTable(){
 		for(int i = 0 ;i<4200;i++)

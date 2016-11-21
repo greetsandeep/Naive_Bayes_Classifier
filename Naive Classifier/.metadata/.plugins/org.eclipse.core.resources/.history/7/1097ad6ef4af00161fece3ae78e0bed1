@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 /**
  * @author sandeep,snehal,tanmaya,kushagra
- * <h4> Implementation of Naive_Bayes_Classifier to find whether a given bitmap represents the image of a person or not </h4>
+ * <h5> Implementation of Naive_Bayes_Classifier to find whether a given bitmap represents the image of a person or not </h5>
  * @version 1.0
  */
 public class Classifier {
