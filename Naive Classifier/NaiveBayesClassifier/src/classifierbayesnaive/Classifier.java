@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 /**
  * @author sandeep,snehal,tanmaya,kushagra
- * @title : Implementation of Naive_Bayes_Classifier to find whether a given bitmap represents the image of a person or not
+ * <h4> Implementation of Naive_Bayes_Classifier to find whether a given bitmap represents the image of a person or not </h4>
  * @version 1.0
  */
 public class Classifier {
@@ -20,10 +20,10 @@ public class Classifier {
 	static HashMap<Integer, double[]> countTable = new HashMap<Integer,double[]>();/** For each pixel stores the probability of it being '#' and being a human & all other three cases*/
 	static double muggle = 0.0;/** Probability of a bitmap being a human*/
 	static double wizard = 0.0;/** Probability of a bitmap not being a human*/
-	static int confusionMatrix[] = new int[4];
+	static int confusionMatrix[] = new int[4];/** For keeping the records of true positives,true negatives, false positives and false negatives*/
 	public static void main(String args[]){
 
-		/* Reading Training Data */
+		/* Reading the Training Data */
 		try{
 			inputLabelHandle("facedatatrainlabels",trainLabels);
 		}catch(Exception e){
@@ -51,7 +51,6 @@ public class Classifier {
 		populateHashTable();
 		trainFaces = null;trainLabels=null;
 		
-		
 		/* Predicting and Evaluating the results*/
 		naivePrediction();
 		calculateAccuracy();
@@ -69,7 +68,8 @@ public class Classifier {
 		
 	}
 	/**
-	 * Calculates the accuracy of the classifier based on the predictedLabels and the testLabels
+	 * Calculates the accuracy of the classifier based on the predicted labels and the given labels and also
+	 * populates the confusion matrix
 	 */
 	public static void calculateAccuracy(){
 		int positive = 0;
@@ -103,7 +103,9 @@ public class Classifier {
 		System.out.println("It has correctly classified "+positive+" instances out of "+(positive+negative)+" instances" );
 	}
 	/**
-	 * Classifies a given bitmap as being a human or not based on the Bayes' Theorem
+	 * Classifies a given bitmap as being a human or not based on the <b>Naive Bayes' Theorem</b>
+	 * To avoid rounding off errors which occur because of multiplication of probabilities, we have rather
+	 * worked with the logarithms of the probabilities and took their sum.
 	 */
 	public static void naivePrediction(){
 		for(int i=0;i<countTable.size();i++)
@@ -113,6 +115,7 @@ public class Classifier {
 			countTable.get(i)[2] = Math.log(countTable.get(i)[2]);
 			countTable.get(i)[3] = Math.log(countTable.get(i)[3]);
 		}
+		
 		for(int i=0;i<testFaces.length;i++)
 		{
 			double human = 0.0;
@@ -128,7 +131,7 @@ public class Classifier {
 					no_human += countTable.get(j)[0];
 				}
 			}
-						
+			//System.out.println(human + " " + ((human>no_human)? " > ":" < ") + no_human);
 			if(human + Math.log(muggle) > Math.log(wizard)+ no_human)
 				predictedLabels.add(1);
 			else
@@ -141,6 +144,8 @@ public class Classifier {
 	 * arr[1] = pixel being 0 when the image is that of a human
 	 * arr[2] = pixel being 1 when the image is not that of a human
 	 * arr[3] = pixel being 1 when the image is that of a human
+	 * We have added 1 to the count of every attribute value - class combination when an attribute value doesn't occur with every class value
+	 * (i.e to overcome the <b>zero frequency problem</b>).
 	 */
 	public static void populateHashTable(){
 		for(int i = 0 ;i<4200;i++)
@@ -185,6 +190,7 @@ public class Classifier {
 		
 		for(int i=0;i<4200;i++)
 		{
+<<<<<<< HEAD
 			double temp[] = new double[4];
 			for(int j=0;j<4;j++){
 				temp[j] = countTable.get(i)[j];
@@ -193,6 +199,17 @@ public class Classifier {
 			countTable.get(i)[1] = (temp[1]+1)/(temp[3]+temp[1]+452);
 			countTable.get(i)[2] = (temp[2]+1)/(temp[0]+temp[2]+452);
 			countTable.get(i)[3] = (temp[3]+1)/(temp[3]+temp[1]+452);
+=======
+			
+			double temp[] = new double[4];
+			for(int j=0;j<temp.length;j++)
+				temp[j] =countTable.get(i)[j];
+			
+			countTable.get(i)[0] = (temp[0])/(temp[0]+temp[2]);
+			countTable.get(i)[1] = (temp[1])/(temp[3]+temp[1]);
+			countTable.get(i)[2] = (temp[2])/(temp[0]+temp[2]); 
+			countTable.get(i)[3] = (temp[3])/(temp[3]+temp[1]);
+>>>>>>> abb32ea103db437e0b36792698d33095b439a41b
 		}
 		
 		muggle = muggle/(muggle+wizard);

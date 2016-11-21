@@ -1,0 +1,248 @@
+package classifierbayesnaive;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+/**
+ * @author sandeep,snehal,tanmaya,kushagra
+ * <h4> Implementation of Naive_Bayes_Classifier to find whether a given bitmap represents the image of a person or not </h4>
+ * @version 1.0
+ */
+public class Classifier {
+	static ArrayList<Integer> trainLabels = new ArrayList<Integer>();/** Stores the results of training data's bitmaps*/
+	static ArrayList<Integer> testLabels = new ArrayList<Integer>();/** Stores the results of testing data's bitmaps*/ 
+	static ArrayList<Integer> predictedLabels = new ArrayList<Integer>();/** Stores the predicted results*/
+	static int [][]trainFaces = new int[451][4200];/** Stores the pixel information of each image in the training data as a 4200 size array (70X60) bitmap */
+	static int [][]testFaces = new int[150][4200];/** Stores the pixel information of each image in the testing data as a 4200 size array (70X60) bitmap */
+	static HashMap<Integer, double[]> countTable = new HashMap<Integer,double[]>();/** For each pixel stores the probability of it being '#' and being a human & all other three cases*/
+	static double muggle = 0.0;/** Probability of a bitmap being a human*/
+	static double wizard = 0.0;/** Probability of a bitmap not being a human*/
+	static int confusionMatrix[] = new int[4];/** For keeping the records of true positives,true negatives, false positives and false negatives*/
+	public static void main(String args[]){
+
+		/* Reading the Training Data */
+		try{
+			inputLabelHandle("facedatatrainlabels",trainLabels);
+		}catch(Exception e){
+		}
+
+		try{
+			inputFaceHandle("facedatatrain",trainFaces);
+		}catch(Exception e){
+		}
+
+		/* Reading the testing data*/
+		try{
+			inputLabelHandle("facedatatestlabels",testLabels);
+		}catch(Exception e){
+		}
+
+		try{
+			inputFaceHandle("facedatatest",testFaces);
+		}catch(Exception e){
+		}
+
+		long startTime = System.currentTimeMillis();
+		
+		/* Processing the training data and applying the classifier*/	
+		populateHashTable();
+		trainFaces = null;trainLabels=null;
+		
+		
+		/* Predicting and Evaluating the results*/
+		naivePrediction();
+		calculateAccuracy();
+		long stopTime = System.currentTimeMillis();
+		long elapsedTime = stopTime - startTime;
+		System.out.println("Total Running Time of the Naive Bayes' Classifier is "+ elapsedTime+" milliseconds" );
+		
+		/*Printing The confusion Matrix*/
+		System.out.println("True Positives : "+ confusionMatrix[0]);
+		System.out.println("True Negatives : "+ confusionMatrix[1]);
+		System.out.println("False Positives : "+ confusionMatrix[3]);
+		System.out.println("False Negatives : "+ confusionMatrix[2]);
+		
+		System.out.println("****************************************************");
+		
+	}
+	/**
+	 * Calculates the accuracy of the classifier based on the predicted labels and the given labels and also
+	 * populates the confusion matrix
+	 */
+	public static void calculateAccuracy(){
+		int positive = 0;
+		int negative = 0;
+		for(int i=0;i<predictedLabels.size();i++)
+		{
+			if(testLabels.get(i)==1 && predictedLabels.get(i)==1)
+			{
+				positive++;
+				confusionMatrix[0]++; // True Positives
+			}
+			else if(testLabels.get(i)==0 && predictedLabels.get(i)==0)
+			{
+				positive++;
+				confusionMatrix[1]++; // True Negatives 
+			}
+			else if(testLabels.get(i)==1 && predictedLabels.get(i)==0)
+			{
+				negative++;
+				confusionMatrix[2]++; // False Negatives
+			}
+			else if(testLabels.get(i)==0 && predictedLabels.get(i)==1)
+			{
+				negative++;
+				confusionMatrix[3]++; // False Positives
+			}
+		}
+		double accuracy = ((double)positive / (positive+negative))*100;
+		accuracy = Math.round(accuracy*100) / 100.0;
+		System.out.println("Accuracy of the classifier is : " + accuracy+"%");
+		System.out.println("It has correctly classified "+positive+" instances out of "+(positive+negative)+" instances" );
+	}
+	/**
+	 * Classifies a given bitmap as being a human or not based on the <b>Naive Bayes' Theorem</b>
+	 * To avoid rounding off errors which occur because of multiplication of probabilities, we have rather
+	 * worked with the logarithms of the probabilities and took their sum.
+	 */
+	public static void naivePrediction(){
+		for(int i=0;i<countTable.size();i++)
+		{
+			countTable.get(i)[0] = Math.log(countTable.get(i)[0]);
+			countTable.get(i)[1] = Math.log(countTable.get(i)[1]);
+			countTable.get(i)[2] = Math.log(countTable.get(i)[2]);
+			countTable.get(i)[3] = Math.log(countTable.get(i)[3]);
+		}
+		for(int i=0;i<testFaces.length;i++)
+		{
+			double human = 0.0;
+			double no_human = 0.0;
+			for(int j=0;j<testFaces[i].length;j++)
+			{
+				if(testFaces[i][j]==1)
+				{
+					human += countTable.get(j)[3];
+					no_human += countTable.get(j)[2];
+				}else{
+					human += countTable.get(j)[1];
+					no_human += countTable.get(j)[0];
+				}
+			}
+						
+			if(human + Math.log(muggle) > Math.log(wizard)+ no_human)
+				predictedLabels.add(1);
+			else
+				predictedLabels.add(0);
+		}
+	}
+	/**
+	 * Populates the countTable Hashmap with the probabilities of each pixel.
+	 * arr[0] = pixel being 0 when the image is not that of a human
+	 * arr[1] = pixel being 0 when the image is that of a human
+	 * arr[2] = pixel being 1 when the image is not that of a human
+	 * arr[3] = pixel being 1 when the image is that of a human
+	 * We have added 1 to the count of every attribute value - class combination when an attribute value doesn't occur with every class value
+	 * (i.e to overcome the <b>zero frequency problem</b>).
+	 */
+	public static void populateHashTable(){
+		for(int i = 0 ;i<4200;i++)
+		{
+			double temp[] = new double[4];
+			countTable.put(i,temp);
+		}
+		for(int i=0;i<trainFaces[0].length;i++)
+		{
+			for(int j=0;j<trainFaces.length;j++)
+			{
+				if(trainFaces[j][i]==0 && trainLabels.get(j)==0){
+					countTable.get(i)[0]++;
+					wizard++;
+				}
+				else if(trainFaces[j][i]==0 && trainLabels.get(j)==1){
+					countTable.get(i)[1]++;
+					muggle++;
+				}
+				else if(trainFaces[j][i]==1 && trainLabels.get(j)==0){
+					countTable.get(i)[2]++;
+					wizard++;
+				}
+				else{
+					countTable.get(i)[3]++;
+					muggle++;
+				}
+			}
+		}
+		
+		for(int i=0;i<countTable.size();i++)
+		{
+			if(countTable.get(i)[0]==0)
+				countTable.get(i)[0]++;
+			else if(countTable.get(i)[1]==0)
+				countTable.get(i)[1]++;
+			else if(countTable.get(i)[2]==0)
+				countTable.get(i)[2]++;
+			else if(countTable.get(i)[3]==0)
+				countTable.get(i)[3]++;
+		}
+		
+		for(int i=0;i<4200;i++)
+		{
+			
+			double temp[] = countTable.get(i);
+			for(int j=0;j<temp.length;j++)
+				temp[j] =countTable.get(i)[j];
+			
+			countTable.get(i)[0] = temp[0]/(temp[0]+temp[2]);
+			countTable.get(i)[1] = temp[1]/(temp[3]+temp[1]);
+			countTable.get(i)[2] = temp[2]/(temp[0]+temp[2]); 
+			countTable.get(i)[3] = temp[3]/(temp[3]+temp[1]);
+		}
+		
+		muggle = muggle/(muggle+wizard);
+		wizard = 1 - muggle;
+	}
+	/**
+	 * @param filename : the filename containing labels
+	 * @param labels : the arrayList of Integers to be updated
+	 * @throws IOException
+	 */
+	public static void inputLabelHandle(String filename,ArrayList<Integer> labels)throws IOException {
+		BufferedReader br = new BufferedReader(new FileReader(filename));
+		String line=null;
+		while( (line=br.readLine()) != null) {
+			labels.add(Integer.parseInt(line));
+		} 
+		br.close();
+	}
+	/**
+	 * @param filename : the filename containing faces (bitmaps)
+	 * @param faces : the array to be updated
+	 * @throws IOException
+	 */
+	public static void inputFaceHandle(String filename, int[][] faces)throws IOException {
+		BufferedReader br = new BufferedReader(new FileReader(filename));
+		String line=null;
+		int linesRead = 0;
+		int row=-1;
+		int column = 0;
+		while((line=br.readLine()) != null) {
+			if(linesRead%70==0)
+			{
+				row++;
+				column = 0;
+			}
+			for(int j =0;j<line.length();j++){
+				if(line.charAt(j)=='#')
+					faces[row][column]=1;
+				else
+					faces[row][column]=0;
+				column++;
+			}
+			linesRead++;
+		}
+		br.close();
+	}
+}
