@@ -219,7 +219,6 @@ public class Classifier {
 		
 		for(int i=0;i<4200;i++)
 		{
-			
 			double temp[] = new double[4];
 			for(int j=0;j<temp.length;j++)
 				temp[j] =countTable.get(i)[j];
