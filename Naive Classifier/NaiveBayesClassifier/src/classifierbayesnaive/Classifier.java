@@ -34,6 +34,7 @@ public class Classifier {
 		}catch(Exception e){
 		}
 
+		
 		/* Reading the testing data*/
 		try{
 			inputLabelHandle("facedatatestlabels",testLabels);
@@ -45,11 +46,11 @@ public class Classifier {
 		}catch(Exception e){
 		}
 
+		
 		long startTime = System.currentTimeMillis();
 		
 		/* Processing the training data and applying the classifier*/	
-		populateHashTable();
-		trainFaces = null;trainLabels=null;
+		populateHashTable(false);
 		
 		/* Predicting and Evaluating the results*/
 		naivePrediction();
@@ -64,7 +65,32 @@ public class Classifier {
 		System.out.println("False Positives : "+ confusionMatrix[3]);
 		System.out.println("False Negatives : "+ confusionMatrix[2]);
 		
-		System.out.println("****************************************************");
+		System.out.println("\n****************************************************\n");
+		
+		
+		
+		/* Naive Bayes' Classifier with add-one smoothing */
+		startTime = System.currentTimeMillis();
+		
+		predictedLabels = new ArrayList<Integer>();
+		countTable = new HashMap<Integer,double[]>();
+		muggle = 0;wizard=0;
+		populateHashTable(true);
+		trainFaces = null;trainLabels=null;
+		naivePrediction();
+		calculateAccuracy();
+		stopTime = System.currentTimeMillis();
+		elapsedTime = stopTime - startTime;
+		System.out.println("Total Running Time of the Naive Bayes' Classifier with smoothing is "+ elapsedTime+" milliseconds" );
+		
+		/*Printing The confusion Matrix*/
+		System.out.println("True Positives : "+ confusionMatrix[0]);
+		System.out.println("True Negatives : "+ confusionMatrix[1]);
+		System.out.println("False Positives : "+ confusionMatrix[3]);
+		System.out.println("False Negatives : "+ confusionMatrix[2]);
+		
+		System.out.println("\n****************************************************\n");
+		
 		
 	}
 	/**
@@ -74,6 +100,7 @@ public class Classifier {
 	public static void calculateAccuracy(){
 		int positive = 0;
 		int negative = 0;
+		confusionMatrix = new int[4];
 		for(int i=0;i<predictedLabels.size();i++)
 		{
 			if(testLabels.get(i)==1 && predictedLabels.get(i)==1)
@@ -138,7 +165,9 @@ public class Classifier {
 				predictedLabels.add(0);
 		}
 	}
+	
 	/**
+	 * @param flag true - Apply smoothing, else don't
 	 * Populates the countTable Hashmap with the probabilities of each pixel.
 	 * arr[0] = pixel being 0 when the image is not that of a human
 	 * arr[1] = pixel being 0 when the image is that of a human
@@ -147,7 +176,7 @@ public class Classifier {
 	 * We have added 1 to the count of every attribute value - class combination when an attribute value doesn't occur with every class value
 	 * (i.e to overcome the <b>zero frequency problem</b>).
 	 */
-	public static void populateHashTable(){
+	public static void populateHashTable(boolean flag){
 		for(int i = 0 ;i<4200;i++)
 		{
 			double temp[] = new double[4];
@@ -190,26 +219,23 @@ public class Classifier {
 		
 		for(int i=0;i<4200;i++)
 		{
-<<<<<<< HEAD
-			double temp[] = new double[4];
-			for(int j=0;j<4;j++){
-				temp[j] = countTable.get(i)[j];
-			}
-			countTable.get(i)[0] = (temp[0]+1)/(temp[0]+temp[2]+452);
-			countTable.get(i)[1] = (temp[1]+1)/(temp[3]+temp[1]+452);
-			countTable.get(i)[2] = (temp[2]+1)/(temp[0]+temp[2]+452);
-			countTable.get(i)[3] = (temp[3]+1)/(temp[3]+temp[1]+452);
-=======
-			
 			double temp[] = new double[4];
 			for(int j=0;j<temp.length;j++)
 				temp[j] =countTable.get(i)[j];
 			
-			countTable.get(i)[0] = (temp[0])/(temp[0]+temp[2]);
-			countTable.get(i)[1] = (temp[1])/(temp[3]+temp[1]);
-			countTable.get(i)[2] = (temp[2])/(temp[0]+temp[2]); 
-			countTable.get(i)[3] = (temp[3])/(temp[3]+temp[1]);
->>>>>>> abb32ea103db437e0b36792698d33095b439a41b
+			if(flag)
+			{
+				countTable.get(i)[0] = (temp[0]+1)/(temp[0]+temp[2]+2);
+				countTable.get(i)[1] = (temp[1]+1)/(temp[3]+temp[1]+2);
+				countTable.get(i)[2] = (temp[2]+1)/(temp[0]+temp[2]+2); 
+				countTable.get(i)[3] = (temp[3]+1)/(temp[3]+temp[1]+2);
+			}
+			else{
+				countTable.get(i)[0] = (temp[0])/(temp[0]+temp[2]);
+				countTable.get(i)[1] = (temp[1])/(temp[3]+temp[1]);
+				countTable.get(i)[2] = (temp[2])/(temp[0]+temp[2]); 
+				countTable.get(i)[3] = (temp[3])/(temp[3]+temp[1]);
+			}
 		}
 		
 		muggle = muggle/(muggle+wizard);

@@ -11,7 +11,7 @@
 		<item value="false" key="nonavbar"/>
 		<item value="" key="docletpath"/>
 		<item value="/usr/lib/jvm/java-8-openjdk-amd64/bin/javadoc" key="javadoc_command_history"/>
-		<item value="1.8" key="source"/>
+		<item value="1.5" key="source"/>
 		<item value="true" key="version"/>
 		<item value="" key="docletname"/>
 		<item value="true" key="splitindex"/>
